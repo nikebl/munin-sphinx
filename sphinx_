@@ -1,0 +1,41 @@
+#!/bin/bash
+
+ #%# family=auto
+ #%# capabilities=autoconf suggest
+LANG=C
+INSTANCE=${0##*sphinxq_}
+case $1 in
+   config)
+        PORT=`sed -ne 's/^.*listen.*=.*[0-9\.]*:\([0-9]*\):mysql41/\1/p' /var/lib/sphinx/conf/sphinx_$INSTANCE.conf`
+        echo "graph_title sphinx status on : $INSTANCE 127.0.0.1:$PORT"
+        echo "graph_args --base 1024 -l 0"
+        echo "graph_vlabel Queryes"
+        echo "graph_category Sphinx"
+        echo "graph_order total"
+        echo "total.label total"
+        echo "total.draw AREA";                                                                                                                                                 
+        echo "total.type DERIVE";                                                                                                                                               
+        echo "total.min 0";                                                                                                                                                     
+        #echo "total.max 10000";                                                                                                                                                
+    exit 0;;
+   suggest)
+         chkconfig --list | sed -ne 's/^searchd_\([a-zA-Z0-9_]*\).*3:on.*$/\1/p '
+    exit 0;;
+   autoconf)
+        if [[ ! -f /usr/bin/mysql ]]; then
+            echo "no (/usr/bin/mysql not found)"
+            exit 0
+        elif [[ ! -f /usr/bin/searchd ]]; then
+            echo "no (/usr/bin/searchd not found)"
+            exit 0
+        else 
+            echo yes
+            exit 0
+        fi
+        ;;
+esac
+
+
+        PORT=`sed -ne 's/^.*listen.*=.*[0-9\.]*:\([0-9]*\):mysql41/\1/p' /var/lib/sphinx/conf/sphinx_$INSTANCE.conf`
+        value=`mysql -h127.0.0.1 -P$PORT -e "show status;" | grep '^queries' | awk '{ print $2}';`
+                echo "total.value $value";
